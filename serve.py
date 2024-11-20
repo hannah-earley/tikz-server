@@ -1,4 +1,4 @@
-from flask import Flask, request, Response, send_file
+from flask import Flask, request, Response, send_file, url_for
 app = Flask(__name__)
 
 @app.route("/")
@@ -21,6 +21,11 @@ import hashlib
 
 CACHE_DIR = Path("./cache")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+@app.route('/tikz.js')
+def js():
+  src = Path('./tikz.js').read_text() + f'\nprocessTikz("{request.host_url}")\n'
+  return Response(src, mimetype="text/javascript")
 
 @app.route("/png", methods=["POST"])
 def png():

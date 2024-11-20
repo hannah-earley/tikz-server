@@ -6,7 +6,7 @@ This is a simple server which will compile and cache tikz pictures (or standalon
 `flask --app serve run --port=8459`
 
 ```html
-<script defer src="tikz.js" onload="processTikz('http://localhost:8459')"></script>
+<script defer src="http://localhost:8459/tikz.js"></script>
 <script type="tikz">
   \draw (0,0) node[above]{Hello, world!};
 </script>
