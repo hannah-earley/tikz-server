@@ -16,9 +16,9 @@ def render(source, libs=["amssymb", "amsmath", "tikz", "circuitikz"], format="pn
     name = 'document'
     (path / (name+'.tex')).write_text(document)
     try:
-      subprocess.run(["pdflatex", "-halt-on-error", name], cwd=path, capture_output=True, check=True)
+      subprocess.run(["texfot", "pdflatex", "-halt-on-error", name], cwd=path, capture_output=True, check=True)
     except subprocess.CalledProcessError as e:
-      return False, e.output
+      return False, '\n'.join(e.output.decode().strip().split('\n')[2:-1])
     match format:
       case "png":
         subprocess.run(["pdftocairo", "-png", "-transp", "-r", "600", "-singlefile", f"{name}.pdf", name], cwd=path, capture_output=True, check=True)
