@@ -2,13 +2,13 @@ window.processTikz = function(server) {
   server = server + '/png';
 
   let preamble = "";
+  let notReady = 0;
 
-  async function handleTikzContent(content, scriptElement) {
-    console.log("TikZ content:", content);
+  async function handleTexContent(content, scriptElement) {
     try {
       let formData = new FormData();
       formData.append("preamble", preamble);
-      formData.append("source", "\\begin{tikzpicture}"+content+"\\end{tikzpicture}");
+      formData.append("source", content);
       const response = await fetch(server, {
         method: 'POST',
         body: formData
@@ -28,7 +28,6 @@ window.processTikz = function(server) {
           const w = img.naturalWidth;
           const h = img.naturalHeight;
           img.style.width = (w / 100)+'em';
-          img.style.height = (h / 100)+'em';
         };
         img.className = "tikz"
         img.src = imageURL;
@@ -36,8 +35,16 @@ window.processTikz = function(server) {
       }
     } catch (err) {
       alert("Error!" + err);
-      console.log(err)
+      console.log(err);
     }
+
+    notReady -= 1;
+    if (notReady == 0 && window.onTikzReady)
+      onTikzReady();
+  }
+
+  async function handleTikzContent(content, scriptElement) {
+    handleTexContent("\\begin{tikzpicture}"+content+"\\end{tikzpicture}", scriptElement);
   }
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -52,8 +59,18 @@ window.processTikz = function(server) {
   document.addEventListener("DOMContentLoaded", () => {
     const tikzScripts = document.querySelectorAll('script[type="tikz"]');
     tikzScripts.forEach((script) => {
+      notReady += 1;
       const tikzContent = script.textContent;
       handleTikzContent(tikzContent, script);
+    });
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const tikzScripts = document.querySelectorAll('script[type="tex"]');
+    tikzScripts.forEach((script) => {
+      notReady += 1;
+      const tikzContent = script.textContent;
+      handleTexContent(tikzContent, script);
     });
   });
 }

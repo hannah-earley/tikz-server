@@ -47,4 +47,6 @@ def generate(format):
     if not ok:
       return Response(out, mimetype="text/plain", status=500)
     CACHED.write_bytes(out)
+
+  CACHED.touch()
   return send_file(CACHED, mimetype=mime)
