@@ -1,10 +1,13 @@
 window.processTikz = function(server) {
   server = server + '/png';
 
+  let preamble = "";
+
   async function handleTikzContent(content, scriptElement) {
     console.log("TikZ content:", content);
     try {
       let formData = new FormData();
+      formData.append("preamble", preamble);
       formData.append("source", "\\begin{tikzpicture}"+content+"\\end{tikzpicture}");
       const response = await fetch(server, {
         method: 'POST',
@@ -24,8 +27,8 @@ window.processTikz = function(server) {
         img.onload = function() {
           const w = img.naturalWidth;
           const h = img.naturalHeight;
-          img.width = w * 0.2;
-          img.height = h * 0.2;
+          img.style.width = (w / 100)+'em';
+          img.style.height = (h / 100)+'em';
         };
         img.className = "tikz"
         img.src = imageURL;
@@ -36,6 +39,15 @@ window.processTikz = function(server) {
       console.log(err)
     }
   }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const tikzScripts = document.querySelectorAll('script[type="preamble"]');
+    tikzScripts.forEach((script) => {
+      const tikzContent = script.textContent;
+      preamble += tikzContent;
+      script.remove();
+    });
+  });
 
   document.addEventListener("DOMContentLoaded", () => {
     const tikzScripts = document.querySelectorAll('script[type="tikz"]');

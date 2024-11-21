@@ -27,24 +27,24 @@ def js():
   src = Path('./tikz.js').read_text() + f'\nprocessTikz("{request.host_url}")\n'
   return Response(src, mimetype="text/javascript")
 
-@app.route("/png", methods=["POST"])
-def png():
-  source = request.form.get("source")
-  CACHED = CACHE_DIR / (hashlib.md5(source.encode()).hexdigest()+'.png')
+formats = {
+  'png': ('.png', 'image/png'),
+  'svg': ('.svg', 'image/svg+xml')
+}
+
+@app.route("/<format>", methods=["POST"])
+def generate(format):
+  ext, mime = formats[format]
+
+  preamble = request.form.get("preamble", "")
+  source = request.form.get("source", "")
+
+  key = hashlib.md5(preamble.encode() + b'\0' + source.encode()).hexdigest()
+  CACHED = CACHE_DIR / (key + ext)
+
   if not CACHED.exists():
-    ok, out = tikz.render(source, format="png")
+    ok, out = tikz.render(source, preamble=preamble, format=format)
     if not ok:
       return Response(out, mimetype="text/plain", status=500)
     CACHED.write_bytes(out)
-  return send_file(CACHED, mimetype="image/png")
-
-@app.route("/svg", methods=["POST"])
-def svg():
-  source = request.form.get("source")
-  CACHED = CACHE_DIR / (hashlib.md5(source.encode()).hexdigest()+'.svg')
-  if not CACHED.exists():
-    ok, out = tikz.render(source, format="svg")
-    if not ok:
-      return Response(out, mimetype="text/plain", status=500)
-    CACHED.write_text(out)
-  return send_file(CACHED, mimetype="image/svg+xml")
+  return send_file(CACHED, mimetype=mime)
