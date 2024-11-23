@@ -51,28 +51,32 @@ def clean_cache(auto=False):
 def auto_clean():
   clean_cache(True)
 
-@app.route('/tikz.js')
-def js():
-  src = Path('./tikz.js').read_text() + f'\nprocessTikz("{request.host_url}")\n'
-  return Response(src, mimetype="text/javascript")
-
 formats = {
-  'png': ('.png', 'image/png'),
-  'svg': ('.svg', 'image/svg+xml')
+  'png': (tikz.render, {'format': 'png'}, '.png', 'image/png', 100),
+  'svg': (tikz.render, {'format': 'svg'}, '.svg', 'image/svg+xml', 10),
+  'svg2': (tikz.render_dvi, {}, '-2.svg', 'image/svg+xml', 10)
 }
 
-@app.route("/<format>", methods=["POST"])
-def generate(format):
-  ext, mime = formats[format]
+@app.route('/tikz.js')
+def js():
+  fmt = request.args.get('format', default='png')
+  _,_,_,_,scale = formats[fmt]
+  src = Path('./tikz.js').read_text() + f'\nprocessTikz("{url_for("generate", fmt=fmt, _external=True)}", {scale})\n'
+  return Response(src, mimetype="text/javascript")
+
+@app.route("/<fmt>", methods=["POST"])
+def generate(fmt):
+  fn, kw, ext, mime, _scale = formats[fmt]
 
   preamble = request.form.get("preamble", "")
   source = request.form.get("source", "")
+  kw['preamble'] = preamble
 
   key = hashlib.md5(preamble.encode() + b'\0' + source.encode()).hexdigest()
   CACHED = CACHE_DIR / (key + ext)
 
   if not CACHED.exists():
-    ok, out = tikz.render(source, preamble=preamble, format=format)
+    ok, out = fn(source, **kw)
     if not ok:
       return Response(out, mimetype="text/plain", status=500)
     CACHED.write_bytes(out)

@@ -1,13 +1,4 @@
-window.processTikz = function(server) {
-  const png = true;
-  let scale = 10;
-  if (png) {
-    server = server + '/png';
-    scale = 100;
-  } else {
-    server = server + '/svg';
-  }
-
+window.processTikz = function(server, scale) {
   let preamble = "";
   let notReady = 0;
 
