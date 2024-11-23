@@ -1,5 +1,12 @@
 window.processTikz = function(server) {
-  server = server + '/png';
+  const png = true;
+  let scale = 10;
+  if (png) {
+    server = server + '/png';
+    scale = 100;
+  } else {
+    server = server + '/svg';
+  }
 
   let preamble = "";
   let notReady = 0;
@@ -27,7 +34,7 @@ window.processTikz = function(server) {
         img.onload = function() {
           const w = img.naturalWidth;
           const h = img.naturalHeight;
-          img.style.width = (w / 100)+'em';
+          img.style.width = (w / scale)+'em';
         };
         img.className = "tikz"
         img.src = imageURL;
