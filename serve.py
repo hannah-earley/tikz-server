@@ -18,9 +18,38 @@ hi\\begin{tikzpicture}
 import tikz
 from pathlib import Path
 import hashlib
+import time
 
 CACHE_DIR = Path("./cache")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+LAST_CACHE_CLEAN = 0
+CACHE_CLEAN_PERIOD = 3600
+CACHE_CLEAN_EXPIRY = 7200
+
+@app.route('/clean')
+def clean_cache(auto=False):
+  global LAST_CACHE_CLEAN
+  now = time.time()
+  if auto and now < LAST_CACHE_CLEAN + CACHE_CLEAN_PERIOD:
+    return
+
+  out = []
+  for file in CACHE_DIR.iterdir():
+    if not file.is_file():
+      continue
+    if now - file.stat().st_mtime > CACHE_CLEAN_EXPIRY:
+      out.append(file.name)
+      file.unlink()
+
+  LAST_CACHE_CLEAN = now
+  if auto:
+    return out
+  else:
+    return Response('\n'.join(out), mimetype='text/plain')
+
+@app.before_request
+def auto_clean():
+  clean_cache(True)
 
 @app.route('/tikz.js')
 def js():
