@@ -2,7 +2,7 @@ import tempfile
 from pathlib import Path
 import subprocess
 
-def render(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuitikz"], format="png", timeout=5):
+def render(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuitikz"], format="png", timeout=10):
   document = f"""
 \\documentclass[margin=0pt,crop]{{standalone}}
 \\usepackage{{{",".join(libs)}}}
@@ -32,9 +32,9 @@ def render(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuitikz"
       case _:
         raise Exception(f"Unknown format {format}")
 
-def render_dvi(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuitikz"], timeout=5):
+def render_dvi(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuitikz"], timeout=15):
   document = f"""
-\\documentclass[margin=0pt,crop,tikz,dvisvgm]{{standalone}}
+\\documentclass[margin=0pt,crop,dvisvgm]{{standalone}}
 \\usepackage{{{",".join(libs)}}}
 {preamble}
 \\begin{{document}}
@@ -52,7 +52,7 @@ def render_dvi(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuit
       call("texfot", "latex", "-halt-on-error", name)
     except subprocess.CalledProcessError as e:
       return False, '\n'.join(e.output.decode().strip().split('\n')[2:-1])
-    call("dvisvgm", "--zoom=1", "--exact", "--font-format=woff2", name)
+    call("dvisvgm", "--zoom=1", "--exact", "--font-format=woff2", name, "-o", f"{name}.svg")
     svg = (path / (name+'.svg')).read_text()
 
     # dvisvgm adds in 'pt' to the dimensions instead of leaving them implicitly as 'px',

@@ -41,11 +41,11 @@ def js():
 def generate(fmt):
   fn, kw, ext, mime, _scale = config.formats[fmt]
 
-  preamble = request.form.get("preamble", "")
-  source = request.form.get("source", "")
-  kw['preamble'] = preamble
+  preamble = request.form.get("preamble", "").replace('\r\n', '\n')
+  source = request.form.get("source", "").replace('\r\n', '\n')
+  kw = {**kw, 'preamble': preamble}
 
-  key = hashlib.md5(preamble.encode() + b'\0' + source.encode()).hexdigest()
+  key = config.CACHE_KEY(preamble, source)
   CACHED = config.CACHE_DIR / (key + ext)
 
   if not CACHED.exists():
