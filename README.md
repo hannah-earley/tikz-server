@@ -50,6 +50,8 @@ Custom preambles may be assembled using one or more dedicated scripts:
 
 All preamble scripts are found, combined, and applied to all TikZ and TeX on the page. Currently it is not possible to use different preambles for different TeX scripts.
 
+_N.B. Default packages loaded are `amssymb`, `amsmath`, `tikz`, `circuitikz`._
+
 While the compilation can also be used for math, it may be preferable to use something like [MathJax](https://www.mathjax.org) or [KaTeX](https://katex.org) for better inline support and to avoid spinning up an entire latex compiler for each.
 
 You may like to add styling for the rendered documents. Rasters will be rendered as img tags with class `tikz`, and SVGs as object tags (also with class `tikz`):
