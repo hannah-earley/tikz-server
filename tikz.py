@@ -10,7 +10,7 @@ class LaTeXError(Exception):
 
 def make_call(cwd, timeout):
   return lambda *a, **k: \
-    subprocess.run(a, **k, cwd=path,
+    subprocess.run(a, **k, cwd=cwd,
                            capture_output=True,
                            check=True,
                            timeout=timeout)

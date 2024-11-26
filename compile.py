@@ -48,7 +48,7 @@ def process_script(script, fmt, preamble, source):
       element = BeautifulSoup('<img>', 'html.parser').img
       element['src'] = binary_uri(image, format_['mimetype'])
 
-    w_em = e / format_['em-size']
+    w_em = w / format_['em-size']
     element['class'] = 'tikz'
     element['style'] = f"width:{w_em}em;"
     script.replace_with(element)
