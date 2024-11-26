@@ -5,6 +5,7 @@ from PIL import Image
 import argparse
 import config
 import base64
+import urllib
 
 def process_script(script, fmt, preamble, source):
   try:
@@ -30,22 +31,29 @@ def process_script(script, fmt, preamble, source):
       soup = BeautifulSoup(image.decode(), "xml")
       svg, = soup.find_all('svg', recursive=False)
       w, h = float(svg['width']), float(svg['height'])
+      uri = "data:image/svg+xml;utf8," + urllib.parse.quote(image.decode().replace('\n',''), safe="' =/:;,")
+      element = BeautifulSoup('<object>', 'html.parser').object
+      element['type'] = 'image/svg+xml'
+      element['data'] = uri
     else:
       w, h = Image.open(CACHED).size
+      uri = f"data:{mime};base64,{base64.b64encode(image).decode()}"
+      element = BeautifulSoup('<img>', 'html.parser').img
+      element['src'] = uri
 
-    img = BeautifulSoup('<img>', 'html.parser').img
-    img['class'] = 'tikz'
-    img['src'] = f"data:{mime};base64,{base64.b64encode(image).decode()}"
-    img['style'] = f"width:{w / scale}em;"
-    script.replace_with(img)
-    # print(img)
+    element['class'] = 'tikz'
+    element['style'] = f"width:{int(w) / scale}em;"
+    script.replace_with(element)
   except Exception as e:
     print(e, file=sys.stderr)
 
-def process(file, fmt, inplace=False):
+def process(file, fmt, inplace=False, preserve_ws=True):
   with open(file, 'r') as fp:
     contents = fp.read()
+  if preserve_ws:
     soup = BeautifulSoup(f'<pre>{contents}</pre>', 'html.parser')
+  else:
+    soup = BeautifulSoup(contents, 'html.parser')
 
   for script in soup.find_all(class_="tikz-server"):
     script.decompose()
@@ -69,9 +77,12 @@ def process(file, fmt, inplace=False):
       preamble,
       "\\begin{tikzpicture}" + script.string + "\\end{tikzpicture}")
 
-  output = str(soup.pre)
-  output = output.removeprefix('<pre>')
-  output = output.removesuffix('</pre>')
+  if preserve_ws:
+    output = str(soup.pre)
+    output = output.removeprefix('<pre>')
+    output = output.removesuffix('</pre>')
+  else:
+    output = str(soup)
   if inplace:
     with open(file, 'w') as fp:
       fp.write(output)
@@ -84,11 +95,12 @@ def main():
   for fmt in config.formats:
     group.add_argument(f"-{fmt}", dest="format", action='store_const', const=fmt)
   parser.add_argument('-inplace', action='store_true')
+  parser.add_argument('-preserve', action='store_true', help="Preserve whitespace")
   parser.add_argument('files', metavar='file', type=str, nargs='+')
   parser.set_defaults(format='png')
   args = parser.parse_args()
   for file in args.files:
-    process(file, fmt=args.format, inplace=args.inplace)
+    process(file, fmt=args.format, inplace=args.inplace, preserve_ws=args.preserve)
 
 if __name__ == '__main__':
   main()

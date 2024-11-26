@@ -20,16 +20,26 @@ window.processTikz = function(server, scale) {
         div.scrollTop = div.scrollHeight;
       } else {
         const result = await response.blob();
+        const mime = result.type;
         const imageURL = URL.createObjectURL(result);
+
         const img = document.createElement("img");
         img.onload = function() {
           const w = img.naturalWidth;
-          const h = img.naturalHeight;
-          img.style.width = (w / scale)+'em';
+          let el;
+
+          if (mime == "image/svg+xml") {
+            el = document.createElement("object");
+            el.type = "image/svg+xml";
+            el.data = imageURL;
+          } else {
+            el = img;
+          }
+          el.className = "tikz";
+          el.style.width = (w / scale)+'em';
+          scriptElement.replaceWith(el);
         };
-        img.className = "tikz"
         img.src = imageURL;
-        scriptElement.replaceWith(img);
       }
     } catch (err) {
       alert("Error!" + err);
