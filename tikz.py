@@ -63,6 +63,7 @@ def render_dvi(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuit
     assert h3.startswith("<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' ")
     assert h3.count('pt') == 2
     h3 = h3.replace('pt', '')
-    svg = '\n'.join([h1,h2,h3,*rest])
+    h4 = '''<script><![CDATA[const svg=document.documentElement;svg.addEventListener('mouseover',svg.pauseAnimations);svg.addEventListener('mouseout',svg.unpauseAnimations);]]></script>'''
+    svg = '\n'.join([h1,h2,h3,h4,*rest])
 
     return True, svg.encode()
