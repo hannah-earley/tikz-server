@@ -1,5 +1,7 @@
 # README
 
+_Note: This is tested on macOS, it will probably work as-is on linux, but changes may be required for Windows._
+
 This project allows TikZ pictures, animations, or standalone LaTeX documents in general to be embeddded in HTML documents and rendered on demand. The rendering is cached, so that large doucments with many TikZ pictures can be rendered quickly and efficiently.
 
 The project includes two uitilities:
@@ -124,6 +126,8 @@ format:
 ```bash
 jekyll serve --livereload --force_polling
 ```
+
+_You may want to add a tall blank div at the end of the page during development to accommodate the page height changes during rendering on livereload._
 
 ### Deployment
 
