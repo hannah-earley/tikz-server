@@ -17,6 +17,7 @@ RASTER_SCALE = 10
 EM_PT_SIZE = 10
 PT_DPI = 72
 formats = {
+
   'png': {
     'renderer': tikz.render,
     'options': {
@@ -27,6 +28,7 @@ formats = {
     'em-size': RASTER_SCALE * EM_PT_SIZE,
     'description': 'High quality PNG raster format'
   },
+
   'svg': {
     'renderer': tikz.render,
     'options': {
@@ -36,6 +38,7 @@ formats = {
     'em-size': EM_PT_SIZE,
     'description': 'SVG vector format'
   },
+
   'svg2': {
     'renderer': tikz.render_dvi,
     'options': {
@@ -45,11 +48,11 @@ formats = {
     'em-size': EM_PT_SIZE,
     'description': 'SVG vector format with animation support'
   }
+
 }
 
 CACHE_DIR = Path(__file__).resolve().parent / Path("./cache")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
-LAST_CACHE_CLEAN = 0
 CACHE_CLEAN_PERIOD = 3600
 CACHE_CLEAN_EXPIRY = 7200
 CACHE_KEY = lambda preamble, source: hashlib.md5(preamble.encode() + b'\0' + source.encode()).hexdigest()

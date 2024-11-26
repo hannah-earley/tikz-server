@@ -1,6 +1,18 @@
-window.processTikz = function(server, scale) {
+window.onTikZReady = function(){
+  console.log("All TikZ scripts loaded.");
+};
+
+window.processTikZ = function(server, scale) {
   let preamble = "";
   let notReady = 0;
+
+  function texError(error, scriptElement) {
+    const div = document.createElement("div");
+    div.className = "tikz-error";
+    div.innerText = error;
+    scriptElement.insertAdjacentElement('afterend', div);
+    div.scrollTop = div.scrollHeight;
+  }
 
   async function handleTexContent(content, scriptElement) {
     try {
@@ -12,12 +24,7 @@ window.processTikz = function(server, scale) {
         body: formData
       });
       if (!response.ok) {
-        const error = await response.text();
-        const div = document.createElement("div");
-        div.className = "tikz-error";
-        div.innerText = error;
-        scriptElement.insertAdjacentElement('afterend', div);
-        div.scrollTop = div.scrollHeight;
+        texError(await response.text(), scriptElement);
       } else {
         const result = await response.blob();
         const mime = result.type;
@@ -35,6 +42,7 @@ window.processTikz = function(server, scale) {
           } else {
             el = img;
           }
+
           el.className = "tikz";
           el.style.width = (w / scale)+'em';
           scriptElement.replaceWith(el);
@@ -42,43 +50,39 @@ window.processTikz = function(server, scale) {
         img.src = imageURL;
       }
     } catch (err) {
-      alert("Error!" + err);
-      console.log(err);
+      texError("Unexpected error: "+err, scriptElement);
     }
 
     notReady -= 1;
-    if (notReady == 0 && window.onTikzReady)
-      onTikzReady();
-  }
-
-  async function handleTikzContent(content, scriptElement) {
-    handleTexContent("\\begin{tikzpicture}"+content+"\\end{tikzpicture}", scriptElement);
+    if (notReady == 0 && window.onTikZReady)
+      onTikZReady();
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    const tikzScripts = document.querySelectorAll('script[type="preamble"]');
-    tikzScripts.forEach((script) => {
+    const preScripts = document.querySelectorAll('script[type="preamble"]');
+    preScripts.forEach((script) => {
       const tikzContent = script.textContent;
       preamble += tikzContent;
       script.remove();
     });
-  });
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const tikzScripts = document.querySelectorAll('script[type="tikz"]');
-    tikzScripts.forEach((script) => {
-      notReady += 1;
-      const tikzContent = script.textContent;
-      handleTikzContent(tikzContent, script);
-    });
-  });
+    const texScripts = document.querySelectorAll('script[type="tex"], script[type="tikz"]');
+    texScripts.forEach((script) => {
+      let content = script.textContent;
+      if (script.type == "tex") {
+        // content = content;
+      } else if (script.type == "tikz") {
+        content = "\\begin{tikzpicture}"+content+"\\end{tikzpicture}";
+      } else {
+        texError("Unexpected error", scriptElement);
+        return;
+      }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const tikzScripts = document.querySelectorAll('script[type="tex"]');
-    tikzScripts.forEach((script) => {
       notReady += 1;
-      const tikzContent = script.textContent;
-      handleTexContent(tikzContent, script);
+      handleTexContent(content, script);
     });
+    
+    if (notReady == 0 && window.onTikZReady)
+      onTikZReady();
   });
-}
+};
