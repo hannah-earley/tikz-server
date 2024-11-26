@@ -1,8 +1,15 @@
 import tempfile
 from pathlib import Path
 import subprocess
+import config
 
-def render(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuitikz"], format="png", timeout=10):
+def render(
+    source,
+    preamble="",
+    libs=config.DEFAULT_LIBRARIES,
+    format="png",
+    raster_dpi=720,
+    timeout=config.RENDER_TIMEOUT):
   document = f"""
 \\documentclass[margin=0pt,crop]{{standalone}}
 \\usepackage{{{",".join(libs)}}}
@@ -24,7 +31,7 @@ def render(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuitikz"
       return False, '\n'.join(e.output.decode().strip().split('\n')[2:-1])
     match format:
       case "png":
-        call("pdftocairo", "-png", "-transp", "-r", "720", "-singlefile", f"{name}.pdf", name)
+        call("pdftocairo", "-png", "-transp", "-r", str(raster_dpi), "-singlefile", f"{name}.pdf", name)
         return True, (path / (name+'.png')).read_bytes()
       case "svg":
         call("pdf2svg", f"{name}.pdf", f"{name}.svg")
@@ -32,7 +39,12 @@ def render(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuitikz"
       case _:
         raise Exception(f"Unknown format {format}")
 
-def render_dvi(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuitikz"], timeout=15):
+def render_dvi(
+    source,
+    preamble="",
+    libs=config.DEFAULT_LIBRARIES,
+    timeout=config.RENDER_TIMEOUT,
+    header=""):
   document = f"""
 \\documentclass[margin=0pt,crop,dvisvgm]{{standalone}}
 \\usepackage{{{",".join(libs)}}}
@@ -63,7 +75,7 @@ def render_dvi(source, preamble="", libs=["amssymb", "amsmath", "tikz", "circuit
     assert h3.startswith("<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' ")
     assert h3.count('pt') == 2
     h3 = h3.replace('pt', '')
-    h4 = '''<script><![CDATA[const svg=document.documentElement;svg.addEventListener('mouseover',svg.pauseAnimations);svg.addEventListener('mouseout',svg.unpauseAnimations);]]></script>'''
+    h4 = header
     svg = '\n'.join([h1,h2,h3,h4,*rest])
 
     return True, svg.encode()

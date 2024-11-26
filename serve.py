@@ -3,6 +3,7 @@ from pathlib import Path
 import hashlib
 import time
 import config
+import mimetypes
 
 app = Flask(__name__)
 
@@ -33,8 +34,8 @@ def auto_clean():
 @app.route('/tikz.js')
 def js():
   fmt = request.args.get('format', default='png')
-  _,_,_,_,scale = config.formats[fmt]
-  src = Path('./tikz.js').read_text() + f'\nprocessTikz("{url_for("generate", fmt=fmt, _external=True)}", {scale})\n'
+  format_ = config.formats[fmt]
+  src = Path('./tikz.js').read_text() + f'\nprocessTikz("{url_for("generate", fmt=fmt, _external=True)}", {format_['em-size']})\n'
   return Response(src, mimetype="text/javascript")
 
 @app.route("/<fmt>", methods=["OPTIONS"])
@@ -51,23 +52,25 @@ def corsify(response):
 
 @app.route("/<fmt>", methods=["POST"])
 def generate(fmt):
-  fn, kw, ext, mime, _scale = config.formats[fmt]
+  format_ = config.formats[fmt]
 
   preamble = request.form.get("preamble", "").replace('\r\n', '\n')
   source = request.form.get("source", "").replace('\r\n', '\n')
-  kw = {**kw, 'preamble': preamble}
+  kw = {**format_['options'], 'preamble': preamble}
 
   key = config.CACHE_KEY(preamble, source)
-  CACHED = config.CACHE_DIR / (key + ext)
+  ext = mimetypes.guess_extension(format_['mimetype'])
+  filename = f"{key}-{fmt}{ext}"
+  CACHED = config.CACHE_DIR / filename
 
   if not CACHED.exists():
-    ok, out = fn(source, **kw)
+    ok, out = format_['renderer'](source, **kw)
     if not ok:
       return corsify(Response(out, mimetype="text/plain", status=500))
     CACHED.write_bytes(out)
 
   CACHED.touch()
-  return corsify(send_file(CACHED, mimetype=mime))
+  return corsify(send_file(CACHED, mimetype=format_['mimetype']))
 
 if __name__ == '__main__':
     app.run(config.HOST, port=config.PORT, debug=True)

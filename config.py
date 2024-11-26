@@ -1,14 +1,50 @@
 from pathlib import Path
 import hashlib
-import tikz
 
 HOST = "127.0.0.1"
 PORT = 8459
 
+RENDER_TIMEOUT = 15
+DEFAULT_LIBRARIES = [
+  "amssymb",
+  "amsmath",
+  "tikz",
+  "circuitikz"
+]
+
+import tikz
+RASTER_SCALE = 10
+EM_PT_SIZE = 10
+PT_DPI = 72
 formats = {
-  'png': (tikz.render, {'format': 'png'}, '.png', 'image/png', 100),
-  'svg': (tikz.render, {'format': 'svg'}, '.svg', 'image/svg+xml', 10),
-  'svg2': (tikz.render_dvi, {}, '-2.svg', 'image/svg+xml', 10)
+  'png': {
+    'renderer': tikz.render,
+    'options': {
+      'format': 'png',
+      'raster_dpi': PT_DPI * RASTER_SCALE
+    },
+    'mimetype': 'image/png',
+    'em-size': RASTER_SCALE * EM_PT_SIZE,
+    'description': 'High quality PNG raster format'
+  },
+  'svg': {
+    'renderer': tikz.render,
+    'options': {
+      'format': 'svg'
+    },
+    'mimetype': 'image/svg+xml',
+    'em-size': EM_PT_SIZE,
+    'description': 'SVG vector format'
+  },
+  'svg2': {
+    'renderer': tikz.render_dvi,
+    'options': {
+      'header': '''<script><![CDATA[const svg=document.documentElement;svg.addEventListener('mouseover',svg.pauseAnimations);svg.addEventListener('mouseout',svg.unpauseAnimations);]]></script>'''
+    },
+    'mimetype': 'image/svg+xml',
+    'em-size': EM_PT_SIZE,
+    'description': 'SVG vector format with animation support'
+  }
 }
 
 CACHE_DIR = Path(__file__).resolve().parent / Path("./cache")
