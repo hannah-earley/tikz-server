@@ -10,7 +10,7 @@ import urllib
 
 def svg_uri(svg):
   lineless = svg.decode().replace('\n','')
-  quoted = urllib.parse.quote(, safe="' =/:;,")
+  quoted = urllib.parse.quote(lineless, safe="' =/:;,")
   return "data:image/svg+xml;utf8," + quoted
 
 def binary_uri(image, mimetype):
@@ -108,7 +108,7 @@ def main():
   parser.add_argument('-inplace', action='store_true', help="Overwrite input files in-place, otherwise outputs to stdout")
   parser.add_argument('-preserve', action='store_true', help="Preserve whitespace")
   parser.add_argument('files', metavar='file', type=str, nargs='+', help="Input HTML file(s)")
-  
+
   args = parser.parse_args()
   for file in args.files:
     process(file, fmt=args.format, inplace=args.inplace, preserve_ws=args.preserve)
