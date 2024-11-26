@@ -37,6 +37,18 @@ def js():
   src = Path('./tikz.js').read_text() + f'\nprocessTikz("{url_for("generate", fmt=fmt, _external=True)}", {scale})\n'
   return Response(src, mimetype="text/javascript")
 
+@app.route("/<fmt>", methods=["OPTIONS"])
+def cors_preflight():
+  response = make_response()
+  response.headers.add("Access-Control-Allow-Origin", "*")
+  response.headers.add('Access-Control-Allow-Headers', "*")
+  response.headers.add('Access-Control-Allow-Methods', "*")
+  return response
+
+def corsify(response):
+  response.headers.add("Access-Control-Allow-Origin", "*")
+  return response
+
 @app.route("/<fmt>", methods=["POST"])
 def generate(fmt):
   fn, kw, ext, mime, _scale = config.formats[fmt]
@@ -51,11 +63,11 @@ def generate(fmt):
   if not CACHED.exists():
     ok, out = fn(source, **kw)
     if not ok:
-      return Response(out, mimetype="text/plain", status=500)
+      return corsify(Response(out, mimetype="text/plain", status=500))
     CACHED.write_bytes(out)
 
   CACHED.touch()
-  return send_file(CACHED, mimetype=mime)
+  return corsify(send_file(CACHED, mimetype=mime))
 
 if __name__ == '__main__':
     app.run(config.HOST, port=config.PORT, debug=True)
