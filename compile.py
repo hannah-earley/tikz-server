@@ -7,6 +7,7 @@ import config
 import cache
 import base64
 import urllib
+import io
 
 def svg_uri(svg):
   lineless = svg.decode().replace('\n','')
@@ -43,7 +44,7 @@ def process_script(script, fmt, preamble, source):
       element['data'] = svg_uri(image)
 
     else:
-      w, _h = Image.open(CACHED).size
+      w, _h = Image.open(io.BytesIO(image)).size
 
       element = BeautifulSoup('<img>', 'html.parser').img
       element['src'] = binary_uri(image, format_['mimetype'])
