@@ -17,14 +17,18 @@ def svg_uri(svg):
 def binary_uri(image, mimetype):
   return f"data:{mimetype};base64,{base64.b64encode(image).decode()}"
 
-def preprocess_script(fmt, preamble, source, verbose=False):
+def preprocess_script(fmt, preamble, source, compiles=1, verbose=False):
   """
   Prerender scripts; intended to be used with multithreading to accelerate compilation.
   """
 
   try:
     format_ = config.formats[fmt]
-    kw = {**format_['options'], 'preamble': preamble}
+    kw = {
+      **format_['options'],
+      'preamble': preamble,
+      'compiles': compiles
+    }
     filename = cache.filename(preamble, source, fmt)
     image = cache.cached(format_['renderer'])(filename, source, **kw)
 
@@ -34,7 +38,7 @@ def preprocess_script(fmt, preamble, source, verbose=False):
   except Exception as e:
     pass
 
-def process_script(script, fmt, preamble, source, verbose=False):
+def process_script(script, fmt, preamble, source, compiles=1, verbose=False):
   """
   Replace the given script element with a rendered copy. This behavior should
   be identical to that of tikz.js (at least when no errors occur).
@@ -42,7 +46,11 @@ def process_script(script, fmt, preamble, source, verbose=False):
 
   try:
     format_ = config.formats[fmt]
-    kw = {**format_['options'], 'preamble': preamble}
+    kw = {
+      **format_['options'],
+      'preamble': preamble,
+      'compiles': compiles
+    }
 
     filename = cache.filename(preamble, source, fmt)
     image = cache.cached(format_['renderer'])(filename, source, **kw)
@@ -99,19 +107,27 @@ def process(file, fmt, inplace=False, preserve_ws=True, threading=False):
     import concurrent.futures
     with concurrent.futures.ThreadPoolExecutor(max_workers=threading) as executor:
       for script in soup.find_all("script", type="tex"):
+        fmt2 = script.get("data-format", fmt)
+        compiles = int(script.get("data-compile", "1"))
         content = script.string
-        executor.submit(preprocess_script, fmt, preamble, content, verbose=True)
+        executor.submit(preprocess_script, fmt2, preamble, content, compiles, verbose=True)
       for script in soup.find_all("script", type="tikz"):
+        fmt2 = script.get("data-format", fmt)
+        compiles = int(script.get("data-compile", "1"))
         content = "\\begin{tikzpicture}" + script.string + "\\end{tikzpicture}"
-        executor.submit(preprocess_script, fmt, preamble, content, verbose=True)
+        executor.submit(preprocess_script, fmt2, preamble, content, compiles, verbose=True)
 
   for script in soup.find_all("script", type="tex"):
+    fmt2 = script.get("data-format", fmt)
+    compiles = int(script.get("data-compiles", "1"))
     content = script.string
-    process_script(script, fmt, preamble, content, verbose=not threading)
+    process_script(script, fmt2, preamble, content, compiles, verbose=not threading)
 
   for script in soup.find_all("script", type="tikz"):
+    fmt2 = script.get("data-format", fmt)
+    compiles = int(script.get("data-compiles", "1"))
     content = "\\begin{tikzpicture}" + script.string + "\\end{tikzpicture}"
-    process_script(script, fmt, preamble, content, verbose=not threading)
+    process_script(script, fmt2, preamble, content, compiles, verbose=not threading)
 
   print('', file=sys.stderr)
 
