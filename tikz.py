@@ -36,7 +36,8 @@ def render(
     libs=config.DEFAULT_LIBRARIES,
     format="png",
     raster_dpi=720,
-    timeout=config.RENDER_TIMEOUT):
+    timeout=config.RENDER_TIMEOUT,
+    compiles=1):
 
   """
   Render the (standalone) tex document using pdflatex followed by either
@@ -51,7 +52,8 @@ def render(
     name = 'document'
     (path / (name+'.tex')).write_text(document)
     try:
-      call("texfot", "pdflatex", "-halt-on-error", name)
+      for _ in range(compiles):
+        call("texfot", "pdflatex", "-halt-on-error", name)
     except subprocess.CalledProcessError as e:
       raise LaTeXError('\n'.join(e.output.decode().strip().split('\n')[2:-1]))
 
@@ -74,7 +76,8 @@ def render_dvi(
     preamble="",
     libs=config.DEFAULT_LIBRARIES,
     timeout=config.RENDER_TIMEOUT,
-    header=""):
+    header="",
+    compiles=1):
 
   """
   Render the (standalone) tex document using plain latex followed by dvisvgm,
@@ -89,7 +92,8 @@ def render_dvi(
     name = 'document'
     (path / (name+'.tex')).write_text(document)
     try:
-      call("texfot", "latex", "-halt-on-error", name)
+      for _ in range(compiles):
+        call("texfot", "latex", "-halt-on-error", name)
     except subprocess.CalledProcessError as e:
       raise LaTeXError('\n'.join(e.output.decode().strip().split('\n')[2:-1]))
 

@@ -103,22 +103,23 @@ script[type=tikz], script[type=tex], div.tikz-error {
 Execute `/path/to/tikz-server/compile.py document.html`.
 
 ```
-usage: compile.py [-h] [-png | -svg | -svg2] [-inplace] [-preserve] file [file ...]
+usage: compile.py [-h] [-png | -svg | -svg2] [-inplace] [-preserve] [-threading T] file [file ...]
 
 Replaces tikz/tex 'scripts' in an HTML file(s) with rendered copies of specified format.
 
 positional arguments:
-  file       Input HTML file(s)
+  file          Input HTML file(s)
 
 options:
-  -h, -help  Show this help message
-  -inplace   Overwrite input files in-place, otherwise outputs to stdout
-  -preserve  Preserve whitespace
+  -h, -help     Show this help message
+  -inplace      Overwrite input files in-place, otherwise outputs to stdout
+  -preserve     Preserve whitespace
+  -threading T  Activate threading with T threads (T=0 uses number of CPU cores)
 
 format:
-  -png       High quality PNG raster format
-  -svg       SVG vector format
-  -svg2      SVG vector format with animation support
+  -png          High quality PNG raster format
+  -svg          SVG vector format
+  -svg2         SVG vector format with animation support
 ```
 
 ## Example jekyll workflow
@@ -150,6 +151,18 @@ rsync --progress --dry-run --delete -avi _site/ /path/to/destination
   - pdftocairo
   - pdf2svg
 - dvisvgm
+
+## Advanced usage
+
+The scripts support some optional arguments:
+
+```html
+<script type="tex" data-compile="2" data-format="svg"></script>
+```
+
+- The number of compilations can be specified (default is 1). This is useful for, e.g., `tikzmark`.
+- The format can be changed on a per-script basis. For example, `tikzmark` doesn't work with `svg2`, so the format can be overriden to `svg`. N.B. Currently there is a known bug in scaling (if the default format is svg and you choose png, or vice-versa, then they will render at the wrong size).
+
 
 ## Related projects
 

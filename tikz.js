@@ -1,6 +1,8 @@
-window.onTikZReady = function(){
-  console.log("All TikZ scripts loaded.");
-};
+if (!onTikZReady) {
+  window.onTikZReady = function(){
+    console.log("All TikZ scripts loaded.");
+  };
+}
 
 window.processTikZ = function(server, scale) {
   let preamble = "";
@@ -19,6 +21,11 @@ window.processTikZ = function(server, scale) {
       let formData = new FormData();
       formData.append("preamble", preamble);
       formData.append("source", content);
+      if (scriptElement.hasAttribute("data-compile"))
+        formData.append("compiles", scriptElement.getAttribute("data-compile"));
+      if (scriptElement.hasAttribute("data-format"))
+        formData.append("format", scriptElement.getAttribute("data-format"));
+      
       const response = await fetch(server, {
         method: 'POST',
         body: formData

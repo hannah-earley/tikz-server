@@ -50,11 +50,17 @@ def js():
 
 @app.route("/<fmt>", methods=["POST"])
 def generate(fmt):
+  fmt = request.form.get("format", fmt)
   format_ = config.formats[fmt]
 
   preamble = request.form.get("preamble", "").replace('\r\n', '\n')
   source = request.form.get("source", "").replace('\r\n', '\n')
-  kw = {**format_['options'], 'preamble': preamble}
+  compiles = int(request.form.get("compiles", "1"))
+  kw = {
+    **format_['options'],
+    'preamble': preamble,
+    'compiles': compiles
+  }
 
   try:
     filename = cache.filename(preamble, source, fmt)
