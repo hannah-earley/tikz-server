@@ -36,6 +36,9 @@ window.processTikZ = function(server, scale) {
         const result = await response.blob();
         const mime = result.type;
         const imageURL = URL.createObjectURL(result);
+        const scale2 = response.headers.get('X-TikZ-Scale') || scale;
+        console.log(response.headers.get('X-TikZ-Scale'), scale, scale2)
+        console.log(...response.headers)
 
         const img = document.createElement("img");
         img.onload = function() {
@@ -51,7 +54,7 @@ window.processTikZ = function(server, scale) {
           }
 
           el.className = "tikz";
-          el.style.width = (w / scale)+'em';
+          el.style.width = (w / scale2)+'em';
           scriptElement.replaceWith(el);
         };
         img.src = imageURL;

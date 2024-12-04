@@ -161,7 +161,7 @@ The scripts support some optional arguments:
 ```
 
 - The number of compilations can be specified (default is 1). This is useful for, e.g., `tikzmark`.
-- The format can be changed on a per-script basis. For example, `tikzmark` doesn't work with `svg2`, so the format can be overriden to `svg`. N.B. Currently there is a known bug in scaling (if the default format is svg and you choose png, or vice-versa, then they will render at the wrong size).
+- The format can be changed on a per-script basis. For example, `tikzmark` doesn't work with `svg2`, so the format can be overriden to `svg`.
 
 
 ## Related projects

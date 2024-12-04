@@ -22,6 +22,7 @@ def cors_preflight():
 @app.after_request
 def corsify(response):
   response.headers.add("Access-Control-Allow-Origin", "*")
+  response.headers.add('Access-Control-Expose-Headers', "X-TikZ-Scale")
   return response
 
 # Cache cleaning
@@ -65,7 +66,9 @@ def generate(fmt):
   try:
     filename = cache.filename(preamble, source, fmt)
     out = cache.cached(format_['renderer'])(filename, source, **kw)
-    return Response(out, mimetype=format_["mimetype"])
+    resp = Response(out, mimetype=format_["mimetype"])
+    resp.headers['X-TikZ-Scale'] = str(format_['em-size'])
+    return resp
   except tikz.LaTeXError as e:
     return Response(str(e), mimetype="text/plain", status=500)
 
