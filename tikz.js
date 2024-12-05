@@ -37,8 +37,6 @@ window.processTikZ = function(server, scale) {
         const mime = result.type;
         const imageURL = URL.createObjectURL(result);
         const scale2 = response.headers.get('X-TikZ-Scale') || scale;
-        console.log(response.headers.get('X-TikZ-Scale'), scale, scale2)
-        console.log(...response.headers)
 
         const img = document.createElement("img");
         img.onload = function() {
