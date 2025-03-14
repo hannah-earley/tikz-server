@@ -51,8 +51,9 @@ formats = {
 
 }
 
-CACHE_DIR = Path(__file__).resolve().parent / Path("./cache")
+CACHE_DIR = Path.home() / Path(".cache/tikz-server")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_CLEAN_PERIOD = 3600
 CACHE_CLEAN_EXPIRY = 7200
+CACHE_CLEAN_SIZE = 50*1024*1024
 CACHE_KEY = lambda preamble, source: hashlib.md5(preamble.encode() + b'\0' + source.encode()).hexdigest()

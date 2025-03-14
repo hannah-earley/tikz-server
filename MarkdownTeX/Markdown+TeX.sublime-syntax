@@ -1,0 +1,31 @@
+%YAML 1.2
+---
+name: Markdown+TeX
+file_extensions: [md]
+scope: text.html.markdown
+extends: Packages/Markdown/Markdown.sublime-syntax
+
+contexts:
+  html-blocks:
+    - meta_prepend: true
+    - match: (<)(?i:script)\s+(?i:type)(=)(["']?)(tex|tikz|preamble)(\5)(>)
+      captures:
+        0: meta.tag.block.any.html
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.block.any.html
+        3: entity.other.attribute-name.html
+        4: punctuation.separator.key-value.html
+        # for simplicity just assume double quoted
+        5: meta.string.html string.quoted.double.html punctuation.definition.string.begin.html
+        6: meta.string.html string.quoted.double.html
+        7: meta.string.html string.quoted.double.html punctuation.definition.string.end.html
+        8: punctuation.definition.tag.end.html
+      embed: scope:text.tex.latex
+      embed_scope:
+        text.tex.latex
+      escape: (</)(?i:script)(>)
+      escape_captures:
+        0: meta.tag.block.any.html
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.block.any.html
+        3: punctuation.definition.tag.end.html
