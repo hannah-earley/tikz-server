@@ -1,13 +1,39 @@
-# README
+# Ti*k*Z-server
 
 _Note: This is tested on macOS, it will probably work as-is on linux, but changes may be required for Windows._
 
-This project allows TikZ pictures, animations, or standalone LaTeX documents in general to be embeddded in HTML documents and rendered on demand. The rendering is cached, so that large doucments with many TikZ pictures can be rendered quickly and efficiently.
+This project allows TikZ pictures, animations, or standalone LaTeX documents in general to be embedded in HTML documents and rendered on demand. The rendering is cached, so that large documents with many TikZ pictures can be rendered quickly and efficiently.
 
-The project includes two uitilities:
+The project includes two utilities:
 
 - A webserver (written in python using flask) that enables the dynamic replacement of embedded TikZ/LaTeX on page load
 - A 'compiler' that replaces embedded TikZ/LaTeX in the page source with rendered copies
+
+## Setup
+
+The easiest way to use TikZ-Server is with docker.
+Run it as
+
+```bash
+docker run --rm -d -p 8459:5000 ghcr.io/hannah-earley/tikz-server:latest
+```
+
+...or pick another port besides 8459 if you prefer.
+
+If you prefer not to use Docker, you should install the below requirements:
+
+- python3
+  - flask
+  - beautifulsoup4
+  - Pillow
+  - lxml
+- latex
+  - dvisvgm
+- poppler
+  - pdftocairo
+  - pdf2svg
+
+Running outside of docker works on macOS, should work on linux, and is not tested on Windows.
 
 ## Supported rendering formats
 
@@ -139,18 +165,6 @@ jekyll build --config _config.deploy.yml
 find _site -type f -name "*.html" -print -exec /path/to/tikz-server/compile.py -svg2 -inplace {} \;
 rsync --progress --dry-run --delete -avi _site/ /path/to/destination
 ```
-
-## Requirements
-- python3
-  - flask
-  - beautifulsoup4
-  - Pillow
-  - lxml
-- latex
-- poppler
-  - pdftocairo
-  - pdf2svg
-- dvisvgm
 
 ## Advanced usage
 
