@@ -15,8 +15,8 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /tikz-server
 RUN pip install gunicorn
-COPY requirements.txt .
+COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
-COPY *.py tikz.js .
+COPY *.py tikz.js ./
 CMD [ "gunicorn", "--bind", "0.0.0.0:5000", "serve:app" ]
