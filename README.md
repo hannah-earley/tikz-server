@@ -20,6 +20,14 @@ docker run --rm -d -p 8459:5000 ghcr.io/hannah-earley/tikz-server:latest
 
 ...or pick another port besides 8459 if you prefer.
 
+To run it as a service that starts on boot, use
+
+```bash
+docker run -d -p 8459:5000 --restart unless-stopped ghcr.io/hannah-earley/tikz-server:latest
+```
+
+instead.
+
 If you prefer not to use Docker, you should install the below requirements:
 
 - python3
